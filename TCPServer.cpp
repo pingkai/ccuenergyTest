@@ -76,9 +76,12 @@ int TCPServer::readClient(int id, uint8_t *buffer, int32_t size) const
 {
     return (int) read(id, buffer, size);
 }
+
+// TODO: async send, add to a task queue, poll
+
 int TCPServer::sendToClient(int id, const uint8_t *buffer, int32_t size) const
 {
-    return (int) send(id, buffer, size, 0);
+    return (int) send(id, buffer, size, MSG_NOSIGNAL);
 }
 int TCPServer::acceptClient()
 {
