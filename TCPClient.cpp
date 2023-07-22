@@ -28,6 +28,7 @@ int TCPClient::connectServer(const std::string &hostIp, int port)
     struct timeval tv {};
     socklen_t lon;
     int valopt;
+    char on = 1;
     // TODO: IPV4/V6
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -35,6 +36,7 @@ int TCPClient::connectServer(const std::string &hostIp, int port)
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK);
+    setsockopt(sockfd, SOL_SOCKET, SO_NOSIGPIPE, (char *) &on, sizeof(on));
     int res = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (res < 0) {
         if (errno == EINPROGRESS) {

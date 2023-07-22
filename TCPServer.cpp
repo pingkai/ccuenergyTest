@@ -55,8 +55,8 @@ int TCPServer::init()
     mFd = socket(AF_INET, SOCK_STREAM, 0);
     int on = 1;
     setsockopt(mFd, SOL_SOCKET, SO_NOSIGPIPE, (char *) &on, sizeof(on));
-    int rc = setsockopt(mFd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on));
-    rc = ioctl(mFd, FIONBIO, (char *) &on);
+    setsockopt(mFd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on));
+    ioctl(mFd, FIONBIO, (char *) &on);
     struct sockaddr_in serv_addr {};
     if (mFd < 0) {
         return errno;
