@@ -11,8 +11,12 @@
 
 class TCPServer : public IServer {
     class Impl;
+
 public:
-    explicit TCPServer(int port,Listener *listener = nullptr);
+    explicit TCPServer(int port, Listener *listener = nullptr);
+    TCPServer(const TCPServer &rhs) = delete;
+    TCPServer &operator=(const TCPServer &rhs) = delete;
+    TCPServer &operator=(TCPServer &&rhs) = delete;
     int init() override;
     int start() override;
 

@@ -6,12 +6,16 @@
 #define ACCUENERGYTEST_TCPCLIENT_H
 
 #include "IClient.h"
-#include <cstddef>
 #include <cinttypes>
+#include <cstddef>
 
 class TCPClient : public IClient {
 public:
     explicit TCPClient(int port);
+
+    TCPClient(const TCPClient &rhs) = default;
+    TCPClient &operator=(const TCPClient &rhs) = delete;
+    TCPClient &operator=(TCPClient &&rhs) = delete;
 
     int connectServer();
     // TODO: define a class for message
