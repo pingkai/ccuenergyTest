@@ -19,7 +19,25 @@ void clientSend(TCPClient &client, const uint8_t *buffer, size_t size)
         }
     }
 }
-
+int clientReceive(TCPClient &client, uint8_t *buffer, size_t size)
+{
+    int p = 0;
+    while (size > 0) {
+        int len = client.receiveMessage(buffer + p, size);
+        if (len <= 0) {
+            if (len == -EAGAIN) {
+                continue;
+            }
+            break;
+        }
+        p += len;
+        size -= len;
+        if (buffer[len - 1] == 0) {// read a string for test
+            break;
+        }
+    }
+    return p;
+}
 int main()
 {
     uint8_t buffer[256];
@@ -32,21 +50,23 @@ int main()
     int ret = client.connectServer("127.0.0.1", 8080);
     ret = client1.connectServer("127.0.0.1", 8080);
 
-    int i = 10;
+    int i = 1000;
     while (i--) {
         snprintf(reinterpret_cast<char *>(buffer), 255, "Hello from client %d", i);
         clientSend(client, buffer, strlen(reinterpret_cast<const char *>(buffer)) + 1);
         clientSend(client1, buffer, strlen(reinterpret_cast<const char *>(buffer)) + 1);
-        ret = client.receiveMessage(buffer, sizeof(buffer));
+        buffer[0] = 0;
+        ret = clientReceive(client, buffer, sizeof(buffer));
         buffer[ret] = 0;
         cout << buffer << endl;
 
         // TODO: while receive
-        ret = client1.receiveMessage(buffer, sizeof(buffer));
+        buffer[0] = 0;
+        ret = clientReceive(client1, buffer, sizeof(buffer));
         buffer[ret] = 0;
         cout << buffer << endl;
 
-        this_thread::sleep_for(std::chrono::milliseconds(100));
+        //    this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     return 0;
