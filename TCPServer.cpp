@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <vector>
 using namespace std;
+using namespace AccuEnergyTest;
 class TCPServer::Impl {
 public:
     const static int invalidFd = -1;

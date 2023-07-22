@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 using namespace std;
+using namespace AccuEnergyTest;
 #define POLLING_TIME 100
 
 // TODO: set timeout

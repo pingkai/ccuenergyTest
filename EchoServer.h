@@ -10,7 +10,7 @@
 #include <stdatomic.h>
 #include <thread>
 #include <unordered_map>
-
+using namespace AccuEnergyTest;
 class EchoServer : private IServer::Listener {
 
 public:

@@ -8,26 +8,27 @@
 #include "IClient.h"
 #include <cinttypes>
 #include <cstddef>
+namespace AccuEnergyTest {
+    class TCPClient : public IClient {
+    public:
+        TCPClient() = default;
+        TCPClient(const TCPClient &rhs) = delete;
+        TCPClient &operator=(const TCPClient &rhs) = delete;
+        TCPClient &operator=(TCPClient &&rhs) = delete;
 
-class TCPClient : public IClient {
-public:
-    TCPClient() = default;
-    TCPClient(const TCPClient &rhs) = delete;
-    TCPClient &operator=(const TCPClient &rhs) = delete;
-    TCPClient &operator=(TCPClient &&rhs) = delete;
+        int connectServer(const std::string &hostIp, int port);
+        // TODO: define a class for message
+        int sendMessage(const uint8_t *buffer, size_t size) const;
 
-    int connectServer(const std::string &hostIp, int port);
-    // TODO: define a class for message
-    int sendMessage(const uint8_t *buffer, size_t size) const;
+        int receiveMessage(uint8_t *buffer, size_t size) const;
 
-    int receiveMessage(uint8_t *buffer, size_t size) const;
-
-    ~TCPClient() override;
+        ~TCPClient() override;
 
 
-private:
-    int sockfd{};
-};
+    private:
+        int sockfd{};
+    };
+}// namespace AccuEnergyTest
 
 
 #endif//ACCUENERGYTEST_TCPCLIENT_H

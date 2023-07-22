@@ -8,6 +8,7 @@
 #include <thread>
 static const int SND_BUF_SIZE = (16 * 1024);
 using namespace std;
+using namespace AccuEnergyTest;
 
 EchoServer::EchoServer(IServer &server) : mServer(server)
 {
@@ -21,8 +22,6 @@ int EchoServer::echoBack(int64_t id)
         mServer.enablePoll(id, false, true);
         return 0;
     }
-
-    // TODO: check if have task in map;
     unique_ptr<uint8_t> buffer = static_cast<unique_ptr<uint8_t>>((uint8_t *) malloc(SND_BUF_SIZE));
 
     rc = mServer.readClient(id, buffer.get(), SND_BUF_SIZE);

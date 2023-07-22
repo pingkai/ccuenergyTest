@@ -6,15 +6,17 @@
 #define ACCUENERGYTEST_ICLIENT_H
 
 #include <atomic>
+namespace AccuEnergyTest {
+    class IClient {
+    public:
+        virtual ~IClient() = default;
+        void cancel()
+        {
+            mCanceled = true;
+        }
 
-class IClient {
-public:
-    virtual ~IClient() = default;
-    void cancel(){
-        mCanceled = true;
-    }
-protected:
-    std::atomic_bool mCanceled{};
-};
-
+    protected:
+        std::atomic_bool mCanceled{};
+    };
+}// namespace AccuEnergyTest
 #endif//ACCUENERGYTEST_ICLIENT_H

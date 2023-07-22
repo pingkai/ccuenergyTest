@@ -3,6 +3,7 @@
 #include "TCPServer.h"
 #include <iostream>
 using namespace std;
+using namespace AccuEnergyTest;
 
 void clientSend(TCPClient &client, const uint8_t *buffer, size_t size)
 {
