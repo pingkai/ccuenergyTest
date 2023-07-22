@@ -90,22 +90,22 @@ TCPClient::~TCPClient()
         close(sockfd);
     }
 }
-static int waite_timeout(int id)
+static int waite_timeout(int id, bool write)
 {
-    int ev = POLLOUT;
-    struct pollfd p = {.fd = id, .events = POLLOUT, .revents = 0};
+    int ev = write ? POLLOUT : POLLIN;
+    struct pollfd p = {.fd = id, .events = static_cast<short>(ev), .revents = 0};
     int ret;
     ret = poll(&p, 1, POLLING_TIME);
     return ret < 0 ? -errno : p.revents & (ev | POLLERR | POLLHUP) ? 0 : -EAGAIN;
 }
 int TCPClient::sendMessage(const uint8_t *buffer, size_t size) const
 {
-    int ret = 0;
+    int ret;
     while (true) {
         if (mCanceled) {
             return -ECANCELED;
         }
-        ret = waite_timeout(sockfd);
+        ret = waite_timeout(sockfd, true);
         if (ret != -EAGAIN) {
             break;
         }
@@ -118,9 +118,22 @@ int TCPClient::sendMessage(const uint8_t *buffer, size_t size) const
 }
 int TCPClient::receiveMessage(uint8_t *buffer, size_t size) const
 {
-    // TODO: nonblock while read
-    int ret = ::read(sockfd, buffer, size);
+    int ret;
+    while (true) {
+        if (mCanceled) {
+            return -ECANCELED;
+        }
+        ret = waite_timeout(sockfd, false);
+        if (ret != -EAGAIN) {
+            break;
+        }
+    }
+    if (ret) {
+        return ret;
+    }
+    ret = ::read(sockfd, buffer, size);
     if (ret < 0) {
+        assert(0);
         return -errno;
     }
     return ret;
