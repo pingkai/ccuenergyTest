@@ -14,11 +14,31 @@
 #include <vector>
 using namespace std;
 class TCPServer::Impl {
-#define MAX_CLIENTS 200
 public:
-    vector<int> clients{};
-    struct pollfd fds[MAX_CLIENTS + 1]{};
-    int nFDs{};
+    const static int invalidFd = -1;
+    vector<pollfd> clients{};
+    inline pollfd *fds()
+    {
+        return &clients[0];
+    }
+    inline int64_t nFDs() const
+    {
+        return (int64_t) clients.size();
+    }
+    void addFd(int fd)
+    {
+        assert(std::find_if(clients.begin(), clients.end(), [fd](const pollfd &fs) { return fs.fd == fd; }) == clients.end());
+        auto item = std::find_if(clients.begin(), clients.end(), [fd](const pollfd &fs) { return fs.fd == Impl::invalidFd; });
+
+        if (item != clients.end()) {
+            printf("replace a invalid one\n");
+            item->fd = fd;
+            item->events = POLLIN;
+            item->revents = 0;
+        } else {
+            clients.emplace_back(pollfd{fd, POLLIN, 0});
+        }
+    }
 };
 
 // TODO: where can we check the port number?
@@ -56,8 +76,8 @@ TCPServer::~TCPServer()
     if (mFd > 0) {
         close(mFd);
     }
-    for (auto fd : mImpl->fds) {
-        if (fd.fd > 0){
+    for (auto fd : mImpl->clients) {
+        if (fd.fd > 0) {
             close(fd.fd);
         }
     }
@@ -69,7 +89,7 @@ int TCPServer::start()
     if (ret < 0) {
         return errno;
     }
-    addNew(mFd);
+    mImpl->addFd(mFd);
     return 0;
 }
 int TCPServer::readClient(int id, uint8_t *buffer, int32_t size) const
@@ -91,15 +111,6 @@ int TCPServer::acceptClient()
     int newsockfd = ::accept(mFd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
     return newsockfd;
 }
-int TCPServer::addNew(int fd)
-{
-    assert(std::find(mImpl->clients.begin(), mImpl->clients.end(), fd) == mImpl->clients.end());
-    mImpl->fds[mImpl->nFDs].fd = fd;
-    mImpl->fds[mImpl->nFDs].events = POLLIN;
-    mImpl->nFDs++;
-    mImpl->clients.emplace_back(fd);
-    return 0;
-}
 void TCPServer::acceptClients()
 {
     int new_client;
@@ -114,13 +125,13 @@ void TCPServer::acceptClients()
         }
         printf("New incoming connection - %d\n", new_client);
 
-        addNew(new_client);
+        mImpl->addFd(new_client);
     } while (true);
 }
 int TCPServer::pollIn()
 {
     int timeout = 10;
-    int rc = poll(mImpl->fds, mImpl->nFDs, timeout);
+    int rc = poll(mImpl->fds(), mImpl->nFDs(), timeout);
 
     if (rc < 0) {
         perror("poll() failed");
@@ -131,25 +142,29 @@ int TCPServer::pollIn()
         return rc;
     }
 
-    int current_size = mImpl->nFDs;
+    int current_size = mImpl->nFDs();
     for (int i = 0; i < current_size; i++) {
-        if (mImpl->fds[i].revents == 0) {
+        if (mImpl->fds()[i].revents == 0) {
             continue;
         }
 
-        if (mImpl->fds[i].revents != POLLIN) {
-            printf("Error! revents = %d\n", mImpl->fds[i].revents);
-            //end_server = TRUE;
+        if (mImpl->fds()[i].revents != POLLIN) {
+            printf("Error! revents = %d\n", mImpl->fds()[i].revents);
+            if (mImpl->fds()[i].revents & POLLHUP) {
+                printf("socket closed\n");
+                close(mImpl->fds()[i].fd);
+                mImpl->fds()[i].fd = Impl::invalidFd;
+            }
             break;
         }
-        if (mImpl->fds[i].fd == mFd) {
+        if (mImpl->fds()[i].fd == mFd) {
             printf("Listening socket is readable\n");
             acceptClients();
             continue;
         }
 
         if (mListener) {
-            mListener->onClient(*this, mImpl->fds[i].fd);
+            mListener->onClient(*this, mImpl->fds()[i].fd);
         }
     }
     return 0;

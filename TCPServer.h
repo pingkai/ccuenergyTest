@@ -31,7 +31,6 @@ public:
 
 private:
     void acceptClients();
-    int addNew(int fd);
 
 private:
     int mFd{};
