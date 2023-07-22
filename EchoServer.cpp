@@ -89,7 +89,7 @@ int EchoServer::onClientWrite(const IServer &server, int64_t id)
         return 0;
     }
 
-    int rc = mServer.sendToClient(id, item->second->mBuffer->get(), item->second->mBufferSize);
+    int rc = mServer.sendToClient(id, item->second->getBuffer(), item->second->getBufferSize());
     if (rc <= 0) {
         // TODO: close the client
         printf("write error %d\n", rc);
@@ -97,8 +97,8 @@ int EchoServer::onClientWrite(const IServer &server, int64_t id)
         mServer.enablePoll(id, false, false);
         return 0;
     }
-    item->second->mBufferSize -= rc;
-    if (item->second->mBufferSize == 0) {
+    item->second->skip(rc);
+    if (item->second->getBufferSize() == 0) {
         //     printf("write out a task\n");
         mTaskMap.erase(id);
         mServer.enablePoll(id, true, false);

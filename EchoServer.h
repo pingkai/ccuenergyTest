@@ -21,8 +21,25 @@ public:
         {}
 
     public:
+        uint8_t *getBuffer()
+        {
+            return mBuffer->get() + index;
+        }
+
+        void skip(int p)
+        {
+            index += p;
+            mBufferSize -= p;
+        }
+        int getBufferSize()
+        {
+            return mBufferSize;
+        }
+
+    private:
         int mBufferSize;
         std::unique_ptr<PoolMemory> mBuffer;
+        int index{};
     };
     explicit EchoServer(IServer &server);
 
