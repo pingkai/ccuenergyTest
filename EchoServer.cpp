@@ -6,6 +6,7 @@
 #include "SimpleMemPool.h"
 #include "utils.h"
 #include <iostream>
+#include <mutex>
 #include <thread>
 static const int SND_BUF_SIZE = (16 * 1024);
 using namespace std;

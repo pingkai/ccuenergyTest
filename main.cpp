@@ -1,6 +1,7 @@
 #include "EchoServer.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
+#include <cstring>
 #include <iostream>
 using namespace std;
 using namespace AccuEnergyTest;

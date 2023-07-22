@@ -4,6 +4,8 @@
 
 #include "TCPServer.h"
 #include "utils.h"
+#include <algorithm>
+#include <cassert>
 #include <cerrno>
 #include <iostream>
 #include <netinet/in.h>
@@ -57,7 +59,9 @@ int TCPServer::init()
     }
     mFd = socket(AF_INET, SOCK_STREAM, 0);
     int on = 1;
+#ifdef SO_NOSIGPIPE
     setsockopt(mFd, SOL_SOCKET, SO_NOSIGPIPE, (char *) &on, sizeof(on));
+#endif
     setsockopt(mFd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on));
     ioctl(mFd, FIONBIO, (char *) &on);
     struct sockaddr_in serv_addr {};
@@ -164,7 +168,7 @@ int TCPServer::pollIn()
         return rc;
     }
 
-    int current_size = mImpl->nFDs();
+    int64_t current_size = mImpl->nFDs();
     for (int i = 0; i < current_size; i++) {
         if (mImpl->fds()[i].revents == 0) {
             continue;

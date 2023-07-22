@@ -8,6 +8,7 @@
 #include "IClient.h"
 #include <cinttypes>
 #include <cstddef>
+#include <string>
 namespace AccuEnergyTest {
     class TCPClient : public IClient {
     public:

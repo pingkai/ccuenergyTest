@@ -4,6 +4,7 @@
 
 #include "TCPClient.h"
 #include <arpa/inet.h>
+#include <cassert>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
@@ -37,7 +38,9 @@ int TCPClient::connectServer(const std::string &hostIp, int port)
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK);
+#ifdef SO_NOSIGPIPE
     setsockopt(sockfd, SOL_SOCKET, SO_NOSIGPIPE, (char *) &on, sizeof(on));
+#endif
     int res = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (res < 0) {
         if (errno == EINPROGRESS) {
@@ -113,7 +116,7 @@ int TCPClient::sendMessage(const uint8_t *buffer, size_t size) const
     if (ret) {
         return ret;
     }
-    ret = send(sockfd, buffer, size, 0);
+    ret = send(sockfd, buffer, size, MSG_NOSIGNAL);
     return ret;
 }
 int TCPClient::receiveMessage(uint8_t *buffer, size_t size) const

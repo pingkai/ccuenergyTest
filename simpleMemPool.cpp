@@ -4,6 +4,7 @@
 
 #include "SimpleMemPool.h"
 #include "utils.h"
+#include <cassert>
 #include <cerrno>
 using namespace AccuEnergyTest;
 SimpleMemPool &SimpleMemPool::getInstance()

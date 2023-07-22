@@ -7,8 +7,8 @@
 
 #include "IServer.h"
 #include "SimpleMemPool.h"
+#include <atomic>
 #include <memory>
-#include <stdatomic.h>
 #include <thread>
 #include <unordered_map>
 using namespace AccuEnergyTest;
@@ -58,7 +58,7 @@ private:
 private:
     IServer &mServer;
     std::unique_ptr<std::thread> mThread{};
-    std::atomic_bool mStop{};
+    std::atomic<bool> mStop{};
     std::unordered_map<int64_t, std::unique_ptr<EchoTask>> mTaskMap{};
 };
 
