@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cerrno>
-#include <iostream>
+#include <cstdio>
 #include <netinet/in.h>
 #include <poll.h>
 #include <sys/ioctl.h>

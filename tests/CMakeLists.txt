@@ -1,33 +1,24 @@
 cmake_minimum_required(VERSION 3.22)
-project(AccuenergyTest)
-
-option(CODE_COVERAGE "Enable coverage reporting" OFF)
-option(USEASAN "Enable Address Sanitizer" OFF)
-option(USETSAN "Enable Thread Sanitizer" OFF)
-option(USEUBSAN "Enable Undefined Behavior Sanitizer" OFF)
-
-set(USEASAN ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CODE_COVERAGE ON)
-
+project(Tests)
 set(CMAKE_CXX_STANDARD 11)
 
-include(code_coverage.cmake)
+if (!HAVE_COVERAGE_CONFIG)
+    include(../code_coverage.cmake)
+endif ()
 
-add_executable(AccuenergyTest main.cpp)
+include(GoogleTest.cmake)
 
-add_library(server STATIC TCPServer.cpp
-        EchoServer.cpp
-        simpleMemPool.cpp
-)
-add_library(client STATIC TCPClient.cpp)
+add_executable(TestCase TestCase.cpp)
 
-target_link_libraries(AccuenergyTest PRIVATE
+target_link_libraries(TestCase PRIVATE
+        gtest_main
         server
         client
 )
 
-add_subdirectory(tests)
+target_include_directories(TestCase PRIVATE
+        ../
+)
 
 if (USEASAN)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer -fsanitize-address-use-after-scope")
@@ -58,3 +49,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         #    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} -fsanitize=address")
     endif (USEMSAN)
 endif ()
+
+enable_testing()
+
+add_test(
+        NAME TestCase
+        COMMAND $<TARGET_FILE:TestCase>
+)

@@ -44,6 +44,10 @@ public:
     explicit EchoServer(IServer &server);
 
     int start();
+#ifdef NDEBUG
+#else
+    int startForTest();
+#endif
 
     ~EchoServer() override;
 

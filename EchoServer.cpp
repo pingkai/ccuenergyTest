@@ -113,3 +113,11 @@ EchoServer::~EchoServer()
         mThread->join();
     }
 }
+#ifdef NDEBUG
+#else
+int EchoServer::startForTest()
+{
+    this->init();
+    return 0;
+}
+#endif

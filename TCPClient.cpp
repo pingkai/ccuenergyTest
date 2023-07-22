@@ -116,7 +116,10 @@ int TCPClient::sendMessage(const uint8_t *buffer, size_t size) const
     if (ret) {
         return ret;
     }
-    ret = send(sockfd, buffer, size, MSG_NOSIGNAL);
+    ret = ::send(sockfd, buffer, size, MSG_NOSIGNAL);
+    if (ret < 0){
+        return -errno;
+    }
     return ret;
 }
 int TCPClient::receiveMessage(uint8_t *buffer, size_t size) const
@@ -136,7 +139,6 @@ int TCPClient::receiveMessage(uint8_t *buffer, size_t size) const
     }
     ret = ::read(sockfd, buffer, size);
     if (ret < 0) {
-        assert(0);
         return -errno;
     }
     return ret;
