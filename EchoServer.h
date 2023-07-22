@@ -6,6 +6,7 @@
 #define ACCUENERGYTEST_ECHOSERVER_H
 
 #include "IServer.h"
+#include "SimpleMemPool.h"
 #include <memory>
 #include <stdatomic.h>
 #include <thread>
@@ -16,12 +17,12 @@ class EchoServer : private IServer::Listener {
 public:
     class EchoTask {
     public:
-        EchoTask(std::unique_ptr<uint8_t> &&buffer, int size) : mBufferSize(size), mBuffer(std::move(buffer))
+        EchoTask(std::unique_ptr<PoolMemory> &&buffer, int size) : mBufferSize(size), mBuffer(std::move(buffer))
         {}
 
     public:
         int mBufferSize;
-        std::unique_ptr<uint8_t> mBuffer;
+        std::unique_ptr<PoolMemory> mBuffer;
     };
     explicit EchoServer(IServer &server);
 

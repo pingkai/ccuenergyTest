@@ -3,6 +3,7 @@
 //
 
 #include "EchoServer.h"
+#include "SimpleMemPool.h"
 #include "utils.h"
 #include <iostream>
 #include <thread>
@@ -12,6 +13,8 @@ using namespace AccuEnergyTest;
 
 EchoServer::EchoServer(IServer &server) : mServer(server)
 {
+    SimpleMemPool::getInstance().setPoolCount(100);
+    SimpleMemPool::getInstance().setSliceSize(SND_BUF_SIZE);
     mServer.setListener(this);
 }
 int EchoServer::echoBack(int64_t id)
@@ -22,9 +25,10 @@ int EchoServer::echoBack(int64_t id)
         mServer.enablePoll(id, false, true);
         return 0;
     }
-    unique_ptr<uint8_t> buffer = static_cast<unique_ptr<uint8_t>>((uint8_t *) malloc(SND_BUF_SIZE));
 
-    rc = mServer.readClient(id, buffer.get(), SND_BUF_SIZE);
+    unique_ptr<PoolMemory> buffer = SimpleMemPool::getInstance().getMemory();
+
+    rc = mServer.readClient(id, buffer->get(), SND_BUF_SIZE);
     if (rc < 0) {
         if (errno != EWOULDBLOCK) {
             perror("recv() failed");
@@ -36,7 +40,7 @@ int EchoServer::echoBack(int64_t id)
         //       close_conn = TRUE;
         return 0;
     }
-    mTaskMap[id] = make_unique<EchoTask>(EchoTask(std::move(buffer), rc));
+    mTaskMap[id] = make_unique<EchoTask>(std::move(buffer), rc);
     mServer.enablePoll(id, false, true);
     return 0;
 }
@@ -58,7 +62,7 @@ void EchoServer::serverLoop()
 int EchoServer::init()
 {
     mServer.start();
-    mThread = make_unique<thread>(thread([&] { this->serverLoop(); }));
+    mThread = make_unique<thread>(([&] { this->serverLoop(); }));
 
     if (!mThread) {
         printf("thread init error\n");
@@ -85,7 +89,7 @@ int EchoServer::onClientWrite(const IServer &server, int64_t id)
         return 0;
     }
 
-    int rc = mServer.sendToClient(id, item->second->mBuffer.get(), item->second->mBufferSize);
+    int rc = mServer.sendToClient(id, item->second->mBuffer->get(), item->second->mBufferSize);
     if (rc <= 0) {
         // TODO: close the client
         printf("write error %d\n", rc);

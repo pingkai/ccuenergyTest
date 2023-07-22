@@ -47,7 +47,7 @@ public:
 // TODO: where can we check the port number?
 TCPServer::TCPServer(int port, Listener *listener) : IServer(port, listener)
 {
-    mImpl = make_unique<Impl>(Impl());
+    mImpl = make_unique<Impl>();
 }
 int TCPServer::init()
 {
