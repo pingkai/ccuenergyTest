@@ -120,5 +120,8 @@ int TCPClient::receiveMessage(uint8_t *buffer, size_t size) const
 {
     // TODO: nonblock while read
     int ret = ::read(sockfd, buffer, size);
+    if (ret < 0) {
+        return -errno;
+    }
     return ret;
 }
