@@ -24,8 +24,10 @@ public:
 
     int acceptClient() override;
 
-    int readClient(int id, uint8_t *buffer, int32_t size) const override;
-    int sendToClient(int id, const uint8_t *buffer, int32_t size) const override;
+    int readClient(int64_t id, uint8_t *buffer, int32_t size) const override;
+    int sendToClient(int64_t id, const uint8_t *buffer, int32_t size) const override;
+
+    int enablePoll(int64_t id, bool In, bool out) override;
 
     ~TCPServer() override;
 

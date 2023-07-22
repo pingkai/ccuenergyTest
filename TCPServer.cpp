@@ -25,7 +25,7 @@ public:
     {
         return (int64_t) clients.size();
     }
-    void addFd(int fd)
+    int64_t addFd(int fd)
     {
         assert(std::find_if(clients.begin(), clients.end(), [fd](const pollfd &fs) { return fs.fd == fd; }) == clients.end());
         auto item = std::find_if(clients.begin(), clients.end(), [fd](const pollfd &fs) { return fs.fd == Impl::invalidFd; });
@@ -35,8 +35,10 @@ public:
             item->fd = fd;
             item->events = POLLIN;
             item->revents = 0;
+            return item - clients.cbegin();
         } else {
             clients.emplace_back(pollfd{fd, POLLIN, 0});
+            return (int64_t) clients.size() - 1;
         }
     }
 };
@@ -92,16 +94,31 @@ int TCPServer::start()
     mImpl->addFd(mFd);
     return 0;
 }
-int TCPServer::readClient(int id, uint8_t *buffer, int32_t size) const
+int TCPServer::readClient(int64_t id, uint8_t *buffer, int32_t size) const
 {
-    return (int) read(id, buffer, size);
+    return (int) read(mImpl->fds()[id].fd, buffer, size);
+}
+
+
+int TCPServer::enablePoll(int64_t id, bool In, bool out)
+{
+    // TODO: check id
+    mImpl->clients[id].events = 0;
+    if (out) {
+        mImpl->clients[id].events |= POLLOUT;
+    }
+    if (In) {
+        mImpl->clients[id].events |= POLLIN;
+    }
+
+    return 0;
 }
 
 // TODO: async send, add to a task queue, poll
 
-int TCPServer::sendToClient(int id, const uint8_t *buffer, int32_t size) const
+int TCPServer::sendToClient(int64_t id, const uint8_t *buffer, int32_t size) const
 {
-    return (int) send(id, buffer, size, MSG_NOSIGNAL);
+    return (int) send(mImpl->fds()[id].fd, buffer, size, MSG_NOSIGNAL);
 }
 int TCPServer::acceptClient()
 {
@@ -125,20 +142,24 @@ void TCPServer::acceptClients()
         }
         printf("New incoming connection - %d\n", new_client);
 
-        mImpl->addFd(new_client);
+        int64_t id = mImpl->addFd(new_client);
+        if (mListener) {
+            mListener->onClient(*this, id);
+        }
     } while (true);
 }
 int TCPServer::pollIn()
 {
-    int timeout = 10;
+    int timeout = 1000;
+    //  printf("1");
     int rc = poll(mImpl->fds(), mImpl->nFDs(), timeout);
+    //   printf("2");
 
     if (rc < 0) {
         perror("poll() failed");
         return rc;
     }
     if (rc == 0) {
-        //printf("  poll() timed out.\n");
         return rc;
     }
 
@@ -148,23 +169,33 @@ int TCPServer::pollIn()
             continue;
         }
 
-        if (mImpl->fds()[i].revents != POLLIN) {
-            printf("Error! revents = %d\n", mImpl->fds()[i].revents);
-            if (mImpl->fds()[i].revents & POLLHUP) {
-                printf("socket closed\n");
-                close(mImpl->fds()[i].fd);
-                mImpl->fds()[i].fd = Impl::invalidFd;
+        if (mImpl->fds()[i].revents & POLLIN) {
+            int revents = mImpl->fds()[i].revents & ~(POLLIN | POLLOUT);
+            if (revents) {
+                if (revents & POLLHUP) {
+                    printf("socket closed\n");
+                    close(mImpl->fds()[i].fd);
+                    mImpl->fds()[i].fd = Impl::invalidFd;
+                }
+                break;
             }
-            break;
-        }
-        if (mImpl->fds()[i].fd == mFd) {
-            printf("Listening socket is readable\n");
-            acceptClients();
-            continue;
+
+            if (mImpl->fds()[i].fd == mFd) {
+                printf("Listening socket is readable\n");
+                acceptClients();
+                continue;
+            }
+
+            if (mListener) {
+                mListener->onClientRead(*this, i);
+            }
         }
 
-        if (mListener) {
-            mListener->onClient(*this, mImpl->fds()[i].fd);
+        if (mImpl->fds()[i].revents & POLLOUT) {
+            // check revents
+            if (mListener) {
+                mListener->onClientWrite(*this, i);
+            }
         }
     }
     return 0;
