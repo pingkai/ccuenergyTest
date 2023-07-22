@@ -11,13 +11,12 @@
 
 class TCPClient : public IClient {
 public:
-    explicit TCPClient(int port);
-
-    TCPClient(const TCPClient &rhs) = default;
+    TCPClient() = default;
+    TCPClient(const TCPClient &rhs) = delete;
     TCPClient &operator=(const TCPClient &rhs) = delete;
     TCPClient &operator=(TCPClient &&rhs) = delete;
 
-    int connectServer();
+    int connectServer(const std::string &hostIp, int port);
     // TODO: define a class for message
     int sendMessage(const uint8_t *buffer, size_t size) const;
 
@@ -27,7 +26,6 @@ public:
 
 
 private:
-    int mPort;
     int sockfd{};
 };
 

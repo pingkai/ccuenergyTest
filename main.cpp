@@ -27,10 +27,9 @@ int main()
     server.init();
     echoServer.start();
     string s = "Hello from client";
-    TCPClient client(8080);
-    TCPClient client1(8080);
-    int ret = client.connectServer();
-    ret = client1.connectServer();
+    TCPClient client, client1;
+    int ret = client.connectServer("127.0.0.1", 8080);
+    ret = client1.connectServer("127.0.0.1", 8080);
 
     int i = 10;
     while (i--) {

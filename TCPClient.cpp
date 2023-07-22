@@ -15,30 +15,30 @@
 #include <unistd.h>
 using namespace std;
 #define POLLING_TIME 100
-TCPClient::TCPClient(int port) : mPort(port)
-{}
 
 // TODO: set timeout
-int TCPClient::connectServer()
+int TCPClient::connectServer(const std::string &hostIp, int port)
 {
+    if (port < 0 || port >= 65535) {
+        return -EINVAL;
+    }
+
     struct sockaddr_in serv_addr {};
     fd_set myset;
     struct timeval tv {};
     socklen_t lon;
     int valopt;
-    // TODO: server addr, IPV4/V6
-    // TODO: check the port number
+    // TODO: IPV4/V6
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(mPort);
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
+    serv_addr.sin_port = htons(port);
+    serv_addr.sin_addr.s_addr = inet_addr(hostIp.c_str());
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK);
     int res = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (res < 0) {
         if (errno == EINPROGRESS) {
-            fprintf(stderr, "EINPROGRESS in connect() - selecting\n");
+            printf("EINPROGRESS in connect() - selecting\n");
             int time = 0;
             do {
                 if (mCanceled) {
