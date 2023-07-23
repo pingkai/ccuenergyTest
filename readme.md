@@ -52,11 +52,11 @@ SimpleMemPool --*PoolMemory
 EchoTask --o PoolMemory
 }
 
-Server --o EchoServer
-Server --o TCPServer
-Client --o TCPClient
-Server << (E,orchid)>>
-Client << (E,orchid)>>
+simpleServer --o EchoServer
+simpleServer --o TCPServer
+simpleClient --o TCPClient
+simpleServer << (X,orchid)>>
+simpleClient << (X,orchid)>>
 
 @enduml
 ```

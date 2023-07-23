@@ -4,12 +4,13 @@
 autonumber
 
 actor simpleServer
-
-simpleServer -> TCPServer ++: create(port)
-
+simpleServer ++
+simpleServer -> TCPServer ++: create(portNumber)
 TCPServer --> simpleServer --
 
 simpleServer -> TCPServer++ : init
+TCPServer -> Socket++ : create
+Socket --> TCPServer--
 TCPServer --> simpleServer --
 
 simpleServer -> EchoServer++ : create(TCPServer)
@@ -21,8 +22,10 @@ EchoServer -> TCPServer --++: start
 TCPServer-> Socket++ : listen
 Socket --> TCPServer --
 
-TCPServer -> EchoServer --++
+TCPServer --> EchoServer --++
 EchoServer -->simpleServer
+
+simpleServer --
 
 loop
     EchoServer ->TCPServer ++: poll
@@ -31,25 +34,38 @@ loop
     alt #Gold client connect
         TCPServer -> Socket ++: accept
         Socket --> TCPServer --
+        TCPServer -> EchoServer --: onClient
+        EchoServer --> TCPServer++
     else #LightBlue client data received
+
         TCPServer -> EchoServer : onClientRead
-        EchoServer -> TCPServer --: read
+        EchoServer -> TCPServer --: readClient
         TCPServer -> Socket --++: read
-        Socket --> EchoServer++
-        EchoServer -> EchoServer : addToSendBack
-        EchoServer --> TCPServer --
+        Socket --> EchoServer++--
+        EchoServer -> EchoServer : addToSendBackQueue
+        EchoServer -->TCPServer ++--
 
     else #Pink can send data to client
-        TCPServer++
-        TCPServer -> EchoServer ++ : onClientWrite
-        EchoServer -> TCPServer  : sendToClient
-        TCPServer -> Socket  : send
-        Socket --> TCPServer
+        TCPServer -> EchoServer ++: onClientWrite
+        EchoServer -> TCPServer -- : sendToClient
+        TCPServer -> Socket ++-- : send
+        Socket --> EchoServer ++--
+        EchoServer -->TCPServer++--
+    else #LightYellow client error
+        TCPServer -> Socket++: close
+        Socket --> TCPServer--
+        TCPServer -> EchoServer ++: onClientError
+        EchoServer -> EchoServer : cleanData
+        EchoServer --> TCPServer--
+        TCPServer--
 
     end
 
 end
-
+participant simpleServer order 1
+participant EchoServer order 2
+participant TCPServer order 3
+participant Socket order 4
 
 
 @enduml
