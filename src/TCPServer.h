@@ -20,9 +20,7 @@ namespace AccuEnergyTest {
         WARN_UNUSED int init() override;
         int start() override;
 
-        int poll() override;
-
-        int acceptClient() override;
+        int poll(int timeout) override;
 
         int readClient(int64_t id, uint8_t *buffer, int32_t size) const override;
         int sendToClient(int64_t id, const uint8_t *buffer, int32_t size) const override;
@@ -33,6 +31,7 @@ namespace AccuEnergyTest {
 
     private:
         void acceptClients();
+        int acceptClient();
 
     private:
         int mFd{};

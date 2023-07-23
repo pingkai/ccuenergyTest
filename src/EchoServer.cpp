@@ -5,12 +5,33 @@
 #include "EchoServer.h"
 #include "SimpleMemPool.h"
 #include "utils.h"
+#include <cstring>
 #include <iostream>
 #include <mutex>
 #include <thread>
 static const int SND_BUF_SIZE = (16 * 1024);
 using namespace std;
 using namespace AccuEnergyTest;
+
+EchoServer::EchoTask::EchoTask(std::unique_ptr<SimpleMemPool::PoolMemory> &&buffer, int size)
+    : mBufferSize(size), mBuffer(std::move(buffer))
+{}
+
+uint8_t *EchoServer::EchoTask::getBuffer()
+{
+    return mBuffer->get() + index;
+}
+
+void EchoServer::EchoTask::skip(int p)
+{
+    index += p;
+    mBufferSize -= p;
+}
+
+int EchoServer::EchoTask::getBufferSize() const
+{
+    return mBufferSize;
+}
 
 EchoServer::EchoServer(IServer &server) : mServer(server)
 {
@@ -20,8 +41,6 @@ EchoServer::EchoServer(IServer &server) : mServer(server)
 }
 int EchoServer::echoBack(int64_t id)
 {
-    int rc;
-
     if (mTaskMap.find(id) != mTaskMap.end()) {// send out all data first
         mServer.enablePoll(id, false, true);
         return 0;
@@ -29,17 +48,15 @@ int EchoServer::echoBack(int64_t id)
 
     unique_ptr<SimpleMemPool::PoolMemory> buffer = SimpleMemPool::getInstance().getMemory();
 
-    rc = mServer.readClient(id, buffer->get(), SND_BUF_SIZE);
+    int rc = mServer.readClient(id, buffer->get(), SND_BUF_SIZE);
     if (rc < 0) {
         if (errno != EWOULDBLOCK) {
             perror("recv() failed");
-            //      close_conn = TRUE;
-            return 0;
+            return -errno;
         }
     } else if (rc == 0) {
         printf("  Connection closed\n");
-        //       close_conn = TRUE;
-        return 0;
+        return -errno;
     }
     mTaskMap[id] = make_unique<EchoTask>(std::move(buffer), rc);
     mServer.enablePoll(id, false, true);
@@ -47,8 +64,10 @@ int EchoServer::echoBack(int64_t id)
 }
 int EchoServer::loopOnce()
 {
-    int timeout = 10;
-    int ret = mServer.poll();
+    int ret = mServer.poll(1000);
+    if (ret < 0) {
+        printf("server poll error: %s\n", strerror(-ret));
+    }
     return ret;
 }
 void EchoServer::serverLoop()
@@ -64,10 +83,6 @@ int EchoServer::init()
 {
     mServer.start();
     mThread = make_unique<thread>(([&] { this->serverLoop(); }));
-
-    //    if (!mThread) {
-    //        printf("thread init error\n");
-    //    }
     return 0;
 }
 
@@ -103,6 +118,15 @@ int EchoServer::onClientWrite(const IServer &server, int64_t id)
         //     printf("write out a task\n");
         mTaskMap.erase(id);
         mServer.enablePoll(id, true, false);
+    }
+    return 0;
+}
+
+int EchoServer::onClientError(const IServer &server, int64_t id)
+{
+    auto item = mTaskMap.find(id);
+    if (item != mTaskMap.end()) {
+        mTaskMap.erase(id);
     }
     return 0;
 }

@@ -13,47 +13,41 @@
 #include <unordered_map>
 namespace AccuEnergyTest {
     class EchoServer : private IServer::Listener {
-
-    public:
+    private:
         class EchoTask {
         public:
-            EchoTask(std::unique_ptr<SimpleMemPool::PoolMemory> &&buffer, int size) : mBufferSize(size), mBuffer(std::move(buffer))
-            {}
-
-        public:
-            uint8_t *getBuffer()
-            {
-                return mBuffer->get() + index;
-            }
-
-            void skip(int p)
-            {
-                index += p;
-                mBufferSize -= p;
-            }
-            int getBufferSize()
-            {
-                return mBufferSize;
-            }
+            EchoTask(std::unique_ptr<SimpleMemPool::PoolMemory> &&buffer, int size);
+            uint8_t *getBuffer();
+            void skip(int p);
+            int getBufferSize() const;
 
         private:
             int mBufferSize;
             std::unique_ptr<SimpleMemPool::PoolMemory> mBuffer;
             int index{};
         };
+
+    public:
         explicit EchoServer(IServer &server);
 
+        /**
+         *  Start to receive clients, typically you can only one server in a process. But if you want to
+         *  start more than one server for testing for example, you can use startForTest api under a debug
+         *  version build
+         * @return
+         */
         int start();
-#ifdef NDEBUG
-#else
+#ifndef NDEBUG
         int startForTest();
 #endif
-
         ~EchoServer() override;
 
     private:
         int onClientRead(const IServer &server, int64_t id) override;
         int onClientWrite(const IServer &server, int64_t id) override;
+        int onClientError(const IServer &server, int64_t id) override;
+
+    private:
         int init();
         void serverLoop();
         int loopOnce();

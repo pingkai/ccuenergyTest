@@ -153,15 +153,14 @@ void TCPServer::acceptClients()
         }
     } while (true);
 }
-int TCPServer::poll()
+int TCPServer::poll(int timeout)
 {
-    int timeout = 1000;
     //  printf("1");
     int rc = ::poll(mImpl->fds(), mImpl->nFDs(), timeout);
     //   printf("2");
 
     if (rc < 0) {
-        perror("poll() failed");
+        printf("poll() failed");
         return rc;
     }
     if (rc == 0) {
@@ -174,17 +173,21 @@ int TCPServer::poll()
             continue;
         }
 
-        if (mImpl->fds()[i].revents & POLLIN) {
-            int revents = mImpl->fds()[i].revents & ~(POLLIN | POLLOUT);
-            if (revents) {
-                if (revents & POLLHUP) {
-                    printf("socket closed\n");
-                    close(mImpl->fds()[i].fd);
-                    mImpl->fds()[i].fd = Impl::invalidFd;
-                }
-                break;
+        if (mImpl->fds()[i].revents & (POLLERR | POLLHUP)) {
+            printf("socket closed or error\n");
+            close(mImpl->fds()[i].fd);
+            mImpl->fds()[i].fd = Impl::invalidFd;
+            if (mImpl->fds()[i].fd == mFd) {
+                printf("listening socket closed or error\n");
+                return -EPIPE;
             }
+            if (mListener) {
+                mListener->onClientError(*this, i);
+            }
+            continue;
+        }
 
+        if (mImpl->fds()[i].revents & POLLIN) {
             if (mImpl->fds()[i].fd == mFd) {
                 printf("Listening socket is readable\n");
                 acceptClients();
@@ -197,7 +200,6 @@ int TCPServer::poll()
         }
 
         if (mImpl->fds()[i].revents & POLLOUT) {
-            // check revents
             if (mListener) {
                 mListener->onClientWrite(*this, i);
             }
