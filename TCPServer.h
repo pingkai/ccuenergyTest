@@ -17,7 +17,7 @@ namespace AccuEnergyTest {
         TCPServer(const TCPServer &rhs) = delete;
         TCPServer &operator=(const TCPServer &rhs) = delete;
         TCPServer &operator=(TCPServer &&rhs) = delete;
-        int init() override;
+        WARN_UNUSED int init() override;
         int start() override;
 
         int pollIn() override;

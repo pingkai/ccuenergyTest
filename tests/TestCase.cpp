@@ -59,7 +59,9 @@ TEST(Server, NoClient)
     const int port = 8080;
     TCPServer server(port, nullptr);
     EchoServer echoServer(server);
-    server.init();
+    if (server.init() < 0) {
+        return;
+    }
     echoServer.startForTest();
 }
 
@@ -69,7 +71,9 @@ TEST(ReleaseServer, 1)
     uint8_t buffer[256];
     unique_ptr<TCPServer> server = make_unique<TCPServer>(port, nullptr);
     unique_ptr<EchoServer> echoServer = make_unique<EchoServer>(*server.get());
-    server->init();
+    if (server->init() < 0) {
+        return;
+    }
     echoServer->startForTest();
 
     TCPClient client;
@@ -102,22 +106,19 @@ TEST(ReleaseServer, 2)
     uint8_t buffer[256];
     unique_ptr<TCPServer> server = make_unique<TCPServer>(port, nullptr);
     unique_ptr<EchoServer> echoServer = make_unique<EchoServer>(*server.get());
-    server->init();
+    int ret = server->init();
+    if (ret < 0) {
+        return;
+    }
     echoServer->startForTest();
 
     TCPClient client;
-    int ret = client.connectServer("127.0.0.1", port);
+    ret = client.connectServer("127.0.0.1", port);
 
     int i = 10;
     while (i--) {
         snprintf(reinterpret_cast<char *>(buffer), 255, "Hello from client %d", i);
         ret = clientSend(client, buffer, strlen(reinterpret_cast<const char *>(buffer)) + 1);
-        if (ret < 0){
-            if (ret == -EPIPE){
-                printf("closed by server\n");
-                break;
-            }
-        }
         if (i == 5){
             echoServer = nullptr;
             server = nullptr;

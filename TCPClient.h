@@ -6,6 +6,7 @@
 #define ACCUENERGYTEST_TCPCLIENT_H
 
 #include "IClient.h"
+#include "utils.h"
 #include <cinttypes>
 #include <cstddef>
 #include <string>
@@ -17,7 +18,7 @@ namespace AccuEnergyTest {
         TCPClient &operator=(const TCPClient &rhs) = delete;
         TCPClient &operator=(TCPClient &&rhs) = delete;
 
-        int connectServer(const std::string &hostIp, int port);
+        WARN_UNUSED int connectServer(const std::string &hostIp, int port);
         // TODO: define a class for message
         int sendMessage(const uint8_t *buffer, size_t size) const;
 

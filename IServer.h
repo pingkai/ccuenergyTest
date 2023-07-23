@@ -5,6 +5,7 @@
 #ifndef ACCUENERGYTEST_ISERVER_H
 #define ACCUENERGYTEST_ISERVER_H
 
+#include "utils.h"
 #include <cstdint>
 namespace AccuEnergyTest {
     class IServer {
@@ -29,7 +30,7 @@ namespace AccuEnergyTest {
             mListener = listener;
         }
 
-        virtual int init() = 0;
+        WARN_UNUSED virtual int init() = 0;
         virtual int start() = 0;
         virtual int acceptClient() = 0;
 

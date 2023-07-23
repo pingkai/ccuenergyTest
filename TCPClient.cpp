@@ -19,7 +19,7 @@ using namespace AccuEnergyTest;
 #define POLLING_TIME 100
 
 // TODO: set timeout
-int TCPClient::connectServer(const std::string &hostIp, int port)
+WARN_UNUSED int TCPClient::connectServer(const std::string &hostIp, int port)
 {
     if (port < 0 || port >= 65535) {
         return -EINVAL;

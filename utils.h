@@ -12,4 +12,5 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+#define WARN_UNUSED __attribute__((warn_unused_result))
 #endif//ACCUENERGYTEST_UTILS_H
