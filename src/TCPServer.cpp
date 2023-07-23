@@ -66,7 +66,7 @@ int TCPServer::init()
     ioctl(mFd, FIONBIO, (char *) &on);
     struct sockaddr_in serv_addr {};
     if (mFd < 0) {
-        return errno;
+        return -errno;
     }
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -74,7 +74,7 @@ int TCPServer::init()
 
     int ret = ::bind(mFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (ret < 0) {
-        return errno;
+        return -errno;
     }
     return 0;
 }
