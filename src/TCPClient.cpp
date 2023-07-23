@@ -117,7 +117,7 @@ int TCPClient::sendMessage(const uint8_t *buffer, size_t size) const
         return ret;
     }
     ret = ::send(sockfd, buffer, size, MSG_NOSIGNAL);
-    if (ret < 0){
+    if (ret < 0) {
         return -errno;
     }
     return ret;

@@ -1,6 +1,6 @@
-#include "EchoServer.h"
-#include "TCPClient.h"
-#include "TCPServer.h"
+#include "src/EchoServer.h"
+#include "src/TCPClient.h"
+#include "src/TCPServer.h"
 #include <cstring>
 #include <iostream>
 using namespace std;
@@ -44,7 +44,9 @@ int main()
     uint8_t buffer[256];
     TCPServer server(8080, nullptr);
     EchoServer echoServer(server);
-    server.init();
+    if (server.init() < 0) {
+        return -1;
+    }
     echoServer.start();
     string s = "Hello from client";
     TCPClient client, client1;

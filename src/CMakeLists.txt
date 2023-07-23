@@ -1,29 +1,17 @@
 cmake_minimum_required(VERSION 3.22)
-project(AccuenergyTest)
-
-option(CODE_COVERAGE "Enable coverage reporting" OFF)
-option(USEASAN "Enable Address Sanitizer" OFF)
-option(USETSAN "Enable Thread Sanitizer" OFF)
-option(USEUBSAN "Enable Undefined Behavior Sanitizer" OFF)
-
-set(USEASAN ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CODE_COVERAGE ON)
+project(library)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include(code_coverage.cmake)
+#include(code_coverage.cmake)
 
-add_executable(AccuenergyTest main.cpp)
-
-add_subdirectory(src)
-
-target_link_libraries(AccuenergyTest PRIVATE
-        server
-        client
+add_library(server STATIC TCPServer.cpp
+        EchoServer.cpp
+        simpleMemPool.cpp
 )
-
-add_subdirectory(tests)
+add_library(client STATIC
+        TCPClient.cpp
+)
 
 if (USEASAN)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer -fsanitize-address-use-after-scope")
