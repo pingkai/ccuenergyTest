@@ -65,9 +65,9 @@ int EchoServer::init()
     mServer.start();
     mThread = make_unique<thread>(([&] { this->serverLoop(); }));
 
-    if (!mThread) {
-        printf("thread init error\n");
-    }
+    //    if (!mThread) {
+    //        printf("thread init error\n");
+    //    }
     return 0;
 }
 

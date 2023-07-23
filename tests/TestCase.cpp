@@ -137,3 +137,58 @@ TEST(ReleaseServer, 2)
         cout << buffer << endl;
     }
 }
+
+TEST(Client, 1)
+{
+    const int port = 8082;
+    TCPClient client;
+    auto thread = std::thread([&] { int ret = client.connectServer("127.0.0.2", port); });
+    this_thread::sleep_for(std::chrono::milliseconds(2000));
+    client.cancel();
+    thread.join();
+
+    TCPClient client2;
+    auto thread2 = std::thread([&] { int ret = client2.connectServer("127.0.0.2", port, 1); });
+    this_thread::sleep_for(std::chrono::milliseconds(2000));
+    client2.cancel();
+    thread2.join();
+
+    TCPClient client3;
+    client3.connectServer("127.0.0.2", 65536);
+}
+
+TEST(main, 1)
+{
+    uint8_t buffer[256];
+    TCPServer server(8080, nullptr);
+    EchoServer echoServer(server);
+    if (server.init() < 0) {
+        return;
+    }
+    echoServer.start();
+    string s = "Hello from client";
+    TCPClient client, client1;
+    int ret = client.connectServer("127.0.0.1", 8080);
+    ret = client1.connectServer("127.0.0.1", 8080);
+
+    int i = 1000;
+    while (i--) {
+        snprintf(reinterpret_cast<char *>(buffer), 255, "Hello from client %d", i);
+        clientSend(client, buffer, strlen(reinterpret_cast<const char *>(buffer)) + 1);
+        clientSend(client1, buffer, strlen(reinterpret_cast<const char *>(buffer)) + 1);
+        buffer[0] = 0;
+        ret = clientReceive(client, buffer, sizeof(buffer));
+        buffer[ret] = 0;
+        cout << buffer << endl;
+
+        // TODO: while receive
+        buffer[0] = 0;
+        ret = clientReceive(client1, buffer, sizeof(buffer));
+        buffer[ret] = 0;
+        cout << buffer << endl;
+
+        //    this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    return;
+}
