@@ -44,3 +44,7 @@ Client << (E,orchid)>>
 @enduml
 ```
 -->
+
+##  Sequence
+
+![](SeverSequence.svg)

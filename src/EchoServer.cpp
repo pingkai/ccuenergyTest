@@ -48,7 +48,7 @@ int EchoServer::echoBack(int64_t id)
 int EchoServer::loopOnce()
 {
     int timeout = 10;
-    int ret = mServer.pollIn();
+    int ret = mServer.poll();
     return ret;
 }
 void EchoServer::serverLoop()

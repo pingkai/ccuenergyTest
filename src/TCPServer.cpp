@@ -153,11 +153,11 @@ void TCPServer::acceptClients()
         }
     } while (true);
 }
-int TCPServer::pollIn()
+int TCPServer::poll()
 {
     int timeout = 1000;
     //  printf("1");
-    int rc = poll(mImpl->fds(), mImpl->nFDs(), timeout);
+    int rc = ::poll(mImpl->fds(), mImpl->nFDs(), timeout);
     //   printf("2");
 
     if (rc < 0) {

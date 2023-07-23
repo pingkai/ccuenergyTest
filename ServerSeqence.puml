@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor simpleServer
+
+simpleServer -> TCPServer ++: create(port)
+
+TCPServer --> simpleServer --
+
+simpleServer -> TCPServer++ : init
+TCPServer --> simpleServer --
+
+simpleServer -> EchoServer++ : create(TCPServer)
+EchoServer --> simpleServer --
+
+simpleServer -> EchoServer++ : start
+EchoServer -> TCPServer --++: start
+
+TCPServer-> Socket++ : listen
+Socket --> TCPServer --
+
+TCPServer -> EchoServer --++
+EchoServer -->simpleServer
+
+loop
+    EchoServer ->TCPServer ++: poll
+    TCPServer -> Socket ++ : poll
+    Socket --> TCPServer--
+    alt #Gold client connect
+        TCPServer -> Socket ++: accept
+        Socket --> TCPServer --
+    else #LightBlue client data received
+        TCPServer -> EchoServer : onClientRead
+        EchoServer -> TCPServer --: read
+        TCPServer -> Socket --++: read
+        Socket --> EchoServer++
+        EchoServer -> EchoServer : addToSendBack
+        EchoServer --> TCPServer --
+
+    else #Pink can send data to client
+        TCPServer++
+        TCPServer -> EchoServer ++ : onClientWrite
+        EchoServer -> TCPServer  : sendToClient
+        TCPServer -> Socket  : send
+        Socket --> TCPServer
+
+    end
+
+end
+
+
+
+@enduml

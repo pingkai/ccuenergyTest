@@ -34,7 +34,7 @@ namespace AccuEnergyTest {
         virtual int start() = 0;
         virtual int acceptClient() = 0;
 
-        virtual int pollIn() = 0;
+        virtual int poll() = 0;
 
         virtual int readClient(int64_t id, uint8_t *buffer, int32_t size) const = 0;
 

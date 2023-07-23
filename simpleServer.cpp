@@ -14,12 +14,12 @@ static const int serverPort = 8081;
 int main()
 {
     TCPServer server(serverPort);
-    EchoServer echoServer(server);
     int ret = server.init();
     if (ret < 0) {
         cerr << "Server start error:" << strerror(-ret) << endl;
         return ret;
     }
+    EchoServer echoServer(server);
     echoServer.start();
 
     bool quite = false;

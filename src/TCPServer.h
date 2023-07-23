@@ -20,7 +20,7 @@ namespace AccuEnergyTest {
         WARN_UNUSED int init() override;
         int start() override;
 
-        int pollIn() override;
+        int poll() override;
 
         int acceptClient() override;
 
