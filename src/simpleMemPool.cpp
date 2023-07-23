@@ -48,7 +48,7 @@ void SimpleMemPool::returnSlice(uint8_t *slice)
     }
     delete[] slice;
 }
-std::unique_ptr<PoolMemory> SimpleMemPool::getMemory()
+std::unique_ptr<SimpleMemPool::PoolMemory> SimpleMemPool::getMemory()
 {
     return make_unique<PoolMemory>();
 }
@@ -59,17 +59,17 @@ SimpleMemPool::~SimpleMemPool()
         mQueue.pop();
     }
 }
-PoolMemory::PoolMemory()
+SimpleMemPool::PoolMemory::PoolMemory()
 {
     mSlice = SimpleMemPool::getInstance().getSlice();
     assert(mSlice);
 }
-PoolMemory::~PoolMemory()
+SimpleMemPool::PoolMemory::~PoolMemory()
 {
     assert(mSlice);
     SimpleMemPool::getInstance().returnSlice(mSlice);
 }
-uint8_t *PoolMemory::get()
+uint8_t *SimpleMemPool::PoolMemory::get()
 {
     return mSlice;
 }

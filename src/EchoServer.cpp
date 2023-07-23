@@ -27,7 +27,7 @@ int EchoServer::echoBack(int64_t id)
         return 0;
     }
 
-    unique_ptr<PoolMemory> buffer = SimpleMemPool::getInstance().getMemory();
+    unique_ptr<SimpleMemPool::PoolMemory> buffer = SimpleMemPool::getInstance().getMemory();
 
     rc = mServer.readClient(id, buffer->get(), SND_BUF_SIZE);
     if (rc < 0) {

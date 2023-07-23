@@ -17,7 +17,7 @@ class EchoServer : private IServer::Listener {
 public:
     class EchoTask {
     public:
-        EchoTask(std::unique_ptr<PoolMemory> &&buffer, int size) : mBufferSize(size), mBuffer(std::move(buffer))
+        EchoTask(std::unique_ptr<SimpleMemPool::PoolMemory> &&buffer, int size) : mBufferSize(size), mBuffer(std::move(buffer))
         {}
 
     public:
@@ -38,7 +38,7 @@ public:
 
     private:
         int mBufferSize;
-        std::unique_ptr<PoolMemory> mBuffer;
+        std::unique_ptr<SimpleMemPool::PoolMemory> mBuffer;
         int index{};
     };
     explicit EchoServer(IServer &server);

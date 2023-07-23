@@ -8,18 +8,17 @@
 #include <queue>
 
 namespace AccuEnergyTest {
-    class PoolMemory {
-    public:
-        PoolMemory();
-        uint8_t *get();
-        ~PoolMemory();
-
-    private:
-        uint8_t *mSlice;
-    };
-
     class SimpleMemPool {
-        friend class PoolMemory;
+    public:
+        class PoolMemory {
+        public:
+            PoolMemory();
+            uint8_t *get();
+            ~PoolMemory();
+
+        private:
+            uint8_t *mSlice{};
+        };
 
     public:
         static SimpleMemPool &getInstance();
