@@ -1,0 +1,33 @@
+name: Linux CI
+
+
+on:
+  push:
+#    branches: [ develop ]
+  pull_request:
+#    branches: [ develop ]
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: before install
+        run: |
+          sudo apt-get update
+          sudo apt-get install git make cmake
+          echo  1 | sudo update-alternatives --config c++
+          echo  1 | sudo update-alternatives --config cc
+
+      - name: build tests
+        run: |
+          mkdir build
+          cd build
+          cmake -DCODE_COVERAGE=ON  -DUSEASAN=ON -DCMAKE_BUILD_TYPE=Debug ../
+          cmake --build . --config Debug -j8
+          cd tests/
+          ctest --output-on-failure
