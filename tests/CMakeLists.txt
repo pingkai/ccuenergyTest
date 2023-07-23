@@ -17,7 +17,7 @@ target_link_libraries(TestCase PRIVATE
 )
 
 target_include_directories(TestCase PRIVATE
-        ../
+        ../src/
 )
 
 if (USEASAN)
