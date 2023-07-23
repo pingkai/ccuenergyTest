@@ -14,13 +14,24 @@ set(CMAKE_CXX_STANDARD 11)
 
 include(code_coverage.cmake)
 
-add_executable(AccuenergyTest main.cpp)
+add_executable(simpleServer simpleServer.cpp)
+add_executable(simpleClient simpleClient.cpp)
 
 add_subdirectory(src)
 
-target_link_libraries(AccuenergyTest PRIVATE
+target_link_libraries(simpleServer PRIVATE
         server
+)
+
+target_link_libraries(simpleClient PRIVATE
         client
+)
+
+target_include_directories(simpleServer PRIVATE
+        src/
+)
+target_include_directories(simpleClient PRIVATE
+        src/
 )
 
 add_subdirectory(tests)
