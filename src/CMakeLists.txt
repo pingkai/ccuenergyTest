@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 #include(code_coverage.cmake)
 
-add_library(server STATIC TCPServer.cpp
+add_library(server STATIC
+        TCPServer.cpp
         EchoServer.cpp
         simpleMemPool.cpp
 )

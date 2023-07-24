@@ -11,6 +11,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CODE_COVERAGE ON)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 
 include(code_coverage.cmake)
 

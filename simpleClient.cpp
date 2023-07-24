@@ -78,8 +78,9 @@ int main(int argc, const char *argv[])
     }
     uint8_t buffer[256];
     buffer[0] = 0;
+    uint64_t count = 0;
     while (true) {
-        snprintf(reinterpret_cast<char *>(buffer), 255, "client time is: %s", getTime().c_str());
+        snprintf(reinterpret_cast<char *>(buffer), 255, "%lld: client time is: %s", count++, getTime().c_str());
         ret = clientSend(client, buffer, strlen(reinterpret_cast<const char *>(buffer)) + 1);
         if (ret <= 0) {
             cerr << "send error " << strerror(ret) << endl;

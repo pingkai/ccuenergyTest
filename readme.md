@@ -15,6 +15,24 @@ Now the code coverage of the testing is about 78%.
 The project don't depend on any other libraries. You should have a clang which support C++11 and CMake to build it.
 you can refer to [Linux CI file](.github/workflows/Linux.yml). And it's also available on macOS.
 
+
+## How to use
+
+```shell
+mkdir build
+cd build
+cmake ../
+make -j8
+./simpleServer # start a server, you can input q to quite, the server port is 8081
+
+# use another terminal
+
+./simpleClient "127.0.0.1" 8081 # you can start the client from anther device, then you should change the ip address
+
+
+```
+
+
 ## TODO:
 
 1. ipv6 supporting
